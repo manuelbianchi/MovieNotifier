@@ -3,6 +3,8 @@ package com.example.msnma.movienotifier;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import java.text.ParseException;
+
 //import icepick.Icepick;
 
 public abstract class BaseFragment extends Fragment {
@@ -24,5 +26,5 @@ public abstract class BaseFragment extends Fragment {
         super.onDestroyView();
     }
 
-    protected abstract void init();
+    protected abstract void init() throws ParseException;
 }

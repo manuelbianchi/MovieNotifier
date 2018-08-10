@@ -31,8 +31,6 @@ public class CoreActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
 
-    boolean twoPane;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -99,14 +97,10 @@ public class CoreActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager)
     {
-        if (findViewById(R.id.movie_detail) != null) {
-            twoPane = true;
-        }
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(MoviesFragment.newInstance(MoviesFragment.Type.POPULAR, twoPane), "Notify");
-        MoviesFragment mv = new MoviesFragment();
-        adapter.addFragment(mv, "Suggested");
-        adapter.addFragment(mv, "Watched");
+        adapter.addFragment(MoviesFragment.newInstance(MoviesFragment.Type.NOTIFY), "Notify");
+        adapter.addFragment(MoviesFragment.newInstance(MoviesFragment.Type.SUGGESTED), "Suggested");
+        adapter.addFragment(MoviesFragment.newInstance(MoviesFragment.Type.WATCHED), "Watched");
         viewPager.setAdapter(adapter);
     }
 }

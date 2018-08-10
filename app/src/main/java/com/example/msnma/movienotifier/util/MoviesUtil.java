@@ -6,9 +6,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
+import com.example.msnma.movienotifier.MainActivity;
 import com.example.msnma.movienotifier.R;
 import com.example.msnma.movienotifier.callback.MoviesCallback;
 import com.example.msnma.movienotifier.database.MovieDatabase;
+import com.example.msnma.movienotifier.mapper.MovieMapper;
 import com.example.msnma.movienotifier.model.Movie;
 import com.example.msnma.movienotifier.provider.MovieContract;
 import com.goebl.david.Webb;
@@ -29,56 +31,64 @@ public class MoviesUtil {
     private static final String TMDB_POSTER_URL = "https://image.tmdb.org/t/p/w185%s";
     private static final String TMDB_BACKDROP_URL = "https://image.tmdb.org/t/p/w300%s";
 
+    private static final String TMDB_UPCOMING_MOVIES ="http://api.themoviedb.org/3/movie/upcoming?api_key=f329e1bdcc6da3f6ed39da7278144be6";
+    private static final String TMDB_IN_THEATRES = "http://api.themoviedb.org/3/movie/now_playing?api_key=f329e1bdcc6da3f6ed39da7278144be6";
+
+    private static final String TYPE_NOTIFY = "NOTIFY";
+    private static final String TYPE_WATCHED = "WATCHED";
     private static final String TYPE_POPULAR = "popular";
-    private static final String TYPE_TOP_RATED = "top_rated";
-    private static final String TYPE_FAVORITES = "favorites";
 
-    public static boolean isFavorite(Context context, Movie movie) {
-        Cursor cursor = context.getContentResolver()
-                .query(MovieContract.CONTENT_URI,
-                        null,
-                        String.format("%s = ? and %s = ?", MovieContract.MOVIE_ID, MovieContract.TYPE),
-                        new String[]{movie.getId() + "", TYPE_FAVORITES},
-                        null
-                );
-        boolean isFavorite = cursor.getCount() > 0;
-        cursor.close();
-        return isFavorite;
+    private static final MovieMapper mapper = new MovieMapper();
+//    public static boolean isFavorite(Context context, Movie movie) {
+//        Cursor cursor = context.getContentResolver()
+//                .query(MovieContract.CONTENT_URI,
+//                        null,
+//                        String.format("%s = ? and %s = ?", MovieContract.MOVIE_ID, MovieContract.TYPE),
+//                        new String[]{movie.getId() + "", TYPE_FAVORITES},
+//                        null
+//                );
+//        boolean isFavorite = cursor.getCount() > 0;
+//        cursor.close();
+//        return isFavorite;
+//    }
+
+//    public static boolean toggleFavorite(Context context, Movie movie) {
+//        if (isFavorite(context, movie)) {
+//            deleteMovie(context, TYPE_FAVORITES, movie);
+//            return false;
+//        } else {
+//            saveMovie(context, TYPE_FAVORITES, movie);
+//            return true;
+//        }
+//    }
+
+    public static void getNotifyMeMovies(Activity activity, MoviesCallback callback) throws ParseException {
+//        getMovies(activity, TYPE_POPULAR, callback);
+        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_NOTIFY));
+        deleteMovies(activity, TYPE_NOTIFY);
+        saveMovies(activity, TYPE_NOTIFY, movies);
     }
 
-    public static boolean toggleFavorite(Context context, Movie movie) {
-        if (isFavorite(context, movie)) {
-            deleteMovie(context, TYPE_FAVORITES, movie);
-            return false;
-        } else {
-            saveMovie(context, TYPE_FAVORITES, movie);
-            return true;
-        }
-    }
-
-    public static void getPopularMovies(Activity activity, MoviesCallback callback) {
+    public static void getSuggestedMovies(Activity activity, MoviesCallback callback) {
         getMovies(activity, TYPE_POPULAR, callback);
+//        getMoviesFromApi(activity);
     }
 
-    public static void getTopRatedMovies(Activity activity, MoviesCallback callback) {
-        getMovies(activity, TYPE_TOP_RATED, callback);
-    }
-
-    public static void getFavoritesMovies(Activity activity, MoviesCallback callback) {
-        getMovies(activity, TYPE_FAVORITES, callback);
+    public static void getWatchedMovies(Activity activity, MoviesCallback callback) throws ParseException {
+//        getMovies(activity, TYPE_FAVORITES, callback);
+        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_WATCHED));
     }
 
     private static void getMovies(final Activity activity, final String type, final MoviesCallback callback) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                if (Util.isConnected(activity, false) && !type.equals(TYPE_FAVORITES)) {
-                    getMoviesFromApi(activity, type);
-                }
-                getMoviesFromDb(activity, type, callback);
-            }
-        });
-    }
+               if (Util.isConnected(activity, false) && !type.equals(TYPE_NOTIFY) && !type.equals(TYPE_WATCHED)) {
+                       getMoviesFromApi(activity, type);
+                   }
+               }
+           });
+       }
 
     private static void getMoviesFromApi(Activity activity, String type) {
         String apiUrl = String.format(TMDB_API_MOVIES_URL, type, activity.getString(R.string.tmdb_api_key), 1);
@@ -88,53 +98,53 @@ public class MoviesUtil {
                     .getBody()
                     .getJSONArray("results");
             List<Movie> movies = toMovies(activity, moviesJson);
-            if(type.equals("POPULAR")){
-                MovieDatabase.saveMoviesOnDB(movies);
-            }
-            deleteMovies(activity, type);
-            saveMovies(activity, type, movies);
+//            if(type.equals("suggested")){
+//                MovieDatabase.saveMoviesOnDB(movies);
+//            }
+            deleteMovies(activity, "popular");
+            saveMovies(activity, "popular", movies);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private static void getMoviesFromDb(Activity activity, String type, final MoviesCallback callback) {
-        try {
-            Cursor cursor = activity.getContentResolver()
-                    .query(MovieContract.CONTENT_URI,
-                            null,
-                            MovieContract.TYPE + " = ?",
-                            new String[]{type},
-                            null
-                    );
-            final List<Movie> movies = toMovies(cursor);
-            cursor.close();
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.success(movies);
-                }
-            });
-        } catch (final Exception e) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.error(e);
-                }
-            });
-        }
-    }
+//    private static void getMoviesFromDb(Activity activity, String type, final MoviesCallback callback) {
+//        try {
+//            Cursor cursor = activity.getContentResolver()
+//                    .query(MovieContract.CONTENT_URI,
+//                            null,
+//                            MovieContract.TYPE + " = ?",
+//                            new String[]{type},
+//                            null
+//                    );
+//            final List<Movie> movies = toMovies(cursor);
+//            cursor.close();
+//            activity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    callback.success(movies);
+//                }
+//            });
+//        } catch (final Exception e) {
+//            activity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    callback.error(e);
+//                }
+//            });
+//        }
+//    }
 
-    private static void saveMovie(final Context context, final String type, final Movie movie) {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                List<Movie> movies = new ArrayList<>();
-                movies.add(movie);
-                saveMovies(context, type, movies);
-            }
-        });
-    }
+//    private static void saveMovie(final Context context, final String type, final Movie movie) {
+//       AsyncTask.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                List<Movie> movies = new ArrayList<>();
+//                movies.add(movie);
+//                saveMovies(context, type, movies);
+//            }
+//        });
+//    }
 
     private static void saveMovies(Context context, String type, List<Movie> movies) {
         if (movies != null) {
@@ -162,17 +172,17 @@ public class MoviesUtil {
         }
     }
 
-    private static void deleteMovie(final Context context, final String type, final Movie movie) {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                context.getContentResolver()
-                        .delete(MovieContract.CONTENT_URI,
-                                MovieContract.MOVIE_ID + " = ? and " + MovieContract.TYPE + " = ?",
-                                new String[]{movie.getId() + "", type});
-            }
-        });
-    }
+//    private static void deleteMovie(final Context context, final String type, final Movie movie) {
+//        AsyncTask.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                context.getContentResolver()
+//                        .delete(MovieContract.CONTENT_URI,
+//                                MovieContract.MOVIE_ID + " = ? and " + MovieContract.TYPE + " = ?",
+//                                new String[]{movie.getId() + "", type});
+//            }
+//        });
+//    }
 
     private static void deleteMovies(final Context context, final String type) {
         AsyncTask.execute(new Runnable() {

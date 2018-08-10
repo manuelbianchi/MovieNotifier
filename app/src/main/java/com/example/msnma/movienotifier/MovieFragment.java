@@ -77,12 +77,12 @@ public class MovieFragment extends BaseFragment {
         Util.openLinkInExternalApp(getContext(), movie.getTrailerUrl());
     }
 
-    @OnClick(R.id.favorite)
-    public void toggleFavorite() {
-        boolean isFavorite = MoviesUtil.toggleFavorite(getContext(), movie);
-        updateFavoriteFab(isFavorite);
+//    @OnClick(R.id.favorite)
+//    public void toggleFavorite() {
+//        boolean isFavorite = MoviesUtil.toggleFavorite(getContext(), movie);
+    //       updateFavoriteFab(isFavorite);
 //         EventBus.getDefault().postSticky(new UpdateFavoritesEvent());
-    }
+//    }
 
     @Override
     protected void init() {
@@ -92,17 +92,17 @@ public class MovieFragment extends BaseFragment {
         titleView.setText(movie.getTitle());
         releaseDateView.setText(Util.toPrettyDate(movie.getReleaseDate()));
         ratingView.setText(movie.getRating() + "");
-        updateFavoriteFab(MoviesUtil.isFavorite(getContext(), movie));
+//        updateFavoriteFab(MoviesUtil.isFavorite(getContext(), movie));
     }
 
-    private void updateFavoriteFab(boolean isFavorite) {
-        GoogleMaterial.Icon favoriteIcon = isFavorite ?
-                GoogleMaterial.Icon.gmd_favorite : GoogleMaterial.Icon.gmd_favorite_border;
-        favoriteView.setImageDrawable(new IconicsDrawable(getContext())
-                .icon(favoriteIcon)
-                .color(Color.WHITE)
-                .sizeDp(48));
-    }
+    //    private void updateFavoriteFab(boolean isFavorite) {
+//        GoogleMaterial.Icon favoriteIcon = isFavorite ?
+//                GoogleMaterial.Icon.gmd_favorite : GoogleMaterial.Icon.gmd_favorite_border;
+//        favoriteView.setImageDrawable(new IconicsDrawable(getContext())
+    //               .icon(favoriteIcon)
+    //               .color(Color.WHITE)
+//                .sizeDp(48));
+//    }
 
     public void shareMovie() {
         String text = String.format("%s\n%s", movie.getTitle(), movie.getTrailerUrl());
