@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,7 +60,7 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //       Icepick.restoreInstanceState(this, savedInstanceState);
+        Icepick.restoreInstanceState(this, savedInstanceState);
         if (getArguments() != null) {
             fragType = (Type) getArguments().getSerializable(ARG_FRAG_TYPE);
         }
@@ -74,31 +73,7 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
 
         try {
             init();
-            if(movies == null || movies.isEmpty()){
-                switch (fragType) {
-                    case NOTIFY:
-                        moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
-                        messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
-                        messageIfEmpty.setText("Search a movie or go on the suggested list for add a movie you want to be notify about!");
-                        moviesView.setVisibility(View.GONE);
-                        messageIfEmpty.setVisibility(View.VISIBLE);
-                        break;
-                    case SUGGESTED:
-                        moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
-                        messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
-                        messageIfEmpty.setText("No connection, please try again");
-                        moviesView.setVisibility(View.GONE);
-                        messageIfEmpty.setVisibility(View.VISIBLE);
-                        break;
-                    case WATCHED:
-                        moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
-                        messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
-                        messageIfEmpty.setText("Add here movies you have watched!");
-                        moviesView.setVisibility(View.GONE);
-                        messageIfEmpty.setVisibility(View.VISIBLE);
-                        break;
-                }
-            }
+//            updateView(rootView);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -176,13 +151,13 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
             };
             switch (fragType) {
                 case NOTIFY:
-                    MoviesUtil.getNotifyMeMovies(getActivity(), callback);
+                    MoviesUtil.getNotifyMeMovies(getActivity(), callback, this);
                     break;
                 case SUGGESTED:
-                    MoviesUtil.getSuggestedMovies(getActivity(), callback);
+                    MoviesUtil.getSuggestedMovies(getActivity(), callback, this);
                     break;
                 case WATCHED:
-                    MoviesUtil.getWatchedMovies(getActivity(), callback);
+                    MoviesUtil.getWatchedMovies(getActivity(), callback, this);
                     break;
             }
         } else if (moviesView != null) {
@@ -204,4 +179,32 @@ public class MoviesFragment extends BaseFragment implements SwipeRefreshLayout.O
         //           }
         //       }
     }
+
+//    public void updateView(View rootView){
+//        if(movies == null || movies.isEmpty()){
+//            switch (fragType) {
+//                case NOTIFY:
+//                    moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
+//                    messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
+//                    messageIfEmpty.setText("Search a movie or go on the suggested list for add a movie you want to be notify about!");
+//                    moviesView.setVisibility(View.GONE);
+//                    messageIfEmpty.setVisibility(View.VISIBLE);
+//                    break;
+//                case SUGGESTED:
+//                     moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
+//                     messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
+//                     messageIfEmpty.setText("No connection, please try again");
+    //                    moviesView.setVisibility(View.GONE);
+//                     messageIfEmpty.setVisibility(View.VISIBLE);
+//                     break;
+//                case WATCHED:
+//                    moviesView = (RecyclerView)rootView.findViewById(R.id.movies);
+//                    messageIfEmpty = (TextView)rootView.findViewById(R.id.empty);
+//                    messageIfEmpty.setText("Add here movies you have watched!");
+//                    moviesView.setVisibility(View.GONE);
+//                    messageIfEmpty.setVisibility(View.VISIBLE);
+//                    break;
+//            }
+//        }
+//    }
 }

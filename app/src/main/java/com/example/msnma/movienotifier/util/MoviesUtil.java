@@ -5,9 +5,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.view.View;
 import android.widget.TextView;
 
 import com.example.msnma.movienotifier.MainActivity;
+import com.example.msnma.movienotifier.MovieFragment;
+import com.example.msnma.movienotifier.MoviesFragment;
 import com.example.msnma.movienotifier.R;
 import com.example.msnma.movienotifier.callback.MoviesCallback;
 import com.example.msnma.movienotifier.database.MovieDatabase;
@@ -63,33 +66,47 @@ public class MoviesUtil {
 //        }
 //    }
 
-    public static void getNotifyMeMovies(Activity activity, MoviesCallback callback) throws ParseException {
-//        getMovies(activity, TYPE_POPULAR, callback);
-        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_NOTIFY));
+    public static void getNotifyMeMovies(Activity activity, MoviesCallback callback, MoviesFragment view) throws ParseException {
+        getMovies(activity, TYPE_NOTIFY, callback, view);
+//        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_NOTIFY));
     }
 
-    public static void getSuggestedMovies(Activity activity, MoviesCallback callback) {
-        getMovies(activity, TYPE_POPULAR, callback);
+    public static void getSuggestedMovies(Activity activity, MoviesCallback callback, MoviesFragment view) {
+        getMovies(activity, TYPE_POPULAR, callback, view);
 //        getMoviesFromApi(activity, TYPE_POPULAR);
     }
 
-    public static void getWatchedMovies(Activity activity, MoviesCallback callback) throws ParseException {
-//        getMovies(activity, TYPE_FAVORITES, callback);
-        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_WATCHED));
+    public static void getWatchedMovies(Activity activity, MoviesCallback callback, MoviesFragment view) throws ParseException {
+        getMovies(activity, TYPE_WATCHED, callback, view);
+//        List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_WATCHED));
     }
 
-    private static void getMovies(final Activity activity, final String type, final MoviesCallback callback) {
+    private static void getMovies(final Activity activity, final String type, final MoviesCallback callback, final MoviesFragment view) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-               if (Util.isConnected(activity, false) && !type.equals(TYPE_NOTIFY) && !type.equals(TYPE_WATCHED)) {
-                       getMoviesFromApi(activity, type);
-                   }
-               }
-           });
-       }
+                if (type.equals(TYPE_NOTIFY)) {
+                    try {
+                        mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_NOTIFY));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                } else if (type.equals(TYPE_WATCHED)) {
+                    try {
+                        mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_WATCHED));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    if (Util.isConnected(activity, false)) {
+                        getMoviesFromApi(activity, TYPE_POPULAR, view);
+                    }
+                }
+            }
+        });
+    }
 
-    private static void getMoviesFromApi(Activity activity, String type) {
+    private static void getMoviesFromApi(Activity activity, String type, MoviesFragment view) {
         String apiUrl = String.format(TMDB_API_MOVIES_URL, type, activity.getString(R.string.tmdb_api_key), 1);
         try {
             JSONArray moviesJson = WEBB.get(apiUrl)
@@ -100,8 +117,10 @@ public class MoviesUtil {
 //            if(type.equals("suggested")){
 //                MovieDatabase.saveMoviesOnDB(movies);
 //            }
-            deleteMovies(activity, TYPE_POPULAR);
-            saveMovies(activity, TYPE_POPULAR, movies);
+            deleteMovies(activity, type);
+            saveMovies(activity, type, movies);
+//            view.updateView(view.getView());
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
