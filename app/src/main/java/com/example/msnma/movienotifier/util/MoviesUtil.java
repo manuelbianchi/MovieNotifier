@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.widget.TextView;
 
 import com.example.msnma.movienotifier.MainActivity;
 import com.example.msnma.movienotifier.R;
@@ -65,13 +66,11 @@ public class MoviesUtil {
     public static void getNotifyMeMovies(Activity activity, MoviesCallback callback) throws ParseException {
 //        getMovies(activity, TYPE_POPULAR, callback);
         List<Movie> movies = mapper.toMovieList(MainActivity.getMovieDatabase().getAllMovieByType(TYPE_NOTIFY));
-        deleteMovies(activity, TYPE_NOTIFY);
-        saveMovies(activity, TYPE_NOTIFY, movies);
     }
 
     public static void getSuggestedMovies(Activity activity, MoviesCallback callback) {
         getMovies(activity, TYPE_POPULAR, callback);
-//        getMoviesFromApi(activity);
+//        getMoviesFromApi(activity, TYPE_POPULAR);
     }
 
     public static void getWatchedMovies(Activity activity, MoviesCallback callback) throws ParseException {
@@ -101,8 +100,8 @@ public class MoviesUtil {
 //            if(type.equals("suggested")){
 //                MovieDatabase.saveMoviesOnDB(movies);
 //            }
-            deleteMovies(activity, "popular");
-            saveMovies(activity, "popular", movies);
+            deleteMovies(activity, TYPE_POPULAR);
+            saveMovies(activity, TYPE_POPULAR, movies);
         } catch (JSONException e) {
             e.printStackTrace();
         }
